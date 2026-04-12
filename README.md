@@ -2,4 +2,4 @@
 The relative synonymous codon usage (RSCU) values of the protein‑coding genes in the mitochondrial genome of the target species were calculated using the RSCU analysis function in Phylosuite v2.0 **(Zhao et al., 2025, *iMeta*, https://hub.uu2025.xyz/10.1002/imt2.70095)**. Subsequently, a combined plot illustrating amino acid usage frequency and a stacked RSCU plot was generated in R.
 If you use this code and find it useful, please cite it as follows:
 ## Citation
-Jiao L. & Chen Y. (2026) Characterization of the complete mitochondrial genome of the beetle *Chrysolina exanthematica* (Chrysomelidae: Chrysomelinae) and phylogenetic implications. *Mitochondrial DNA Part A*. http://dx.doi.org/10.1080/24701394.2026.2658511
+Jiao L. & Chen Y. Characterization of the complete mitochondrial genome of the beetle *Chrysolina exanthematica* (Chrysomelidae: Chrysomelinae) and phylogenetic implications. *Mitochondrial DNA Part A*. (2026) http://dx.doi.org/10.1080/24701394.2026.2658511
