@@ -9,4 +9,4 @@ The files used in the code are shown in the figure below.
 If you use this code and find it useful, please cite it as follows:
 
 ## Citation
-Jiao L. & Chen Y. Characterization of the complete mitochondrial genome of the beetle *Chrysolina exanthematica* (Chrysomelidae: Chrysomelinae) and phylogenetic implications. *Mitochondrial DNA Part A*. (2026) http://dx.doi.org/10.1080/24701394.2026.2658511
+Jiao, L., & Chen, Y. (2026). Characterization of the complete mitochondrial genome of the beetle *Chrysolina exanthematica* (Chrysomelidae: Chrysomelinae) and phylogenetic implications. *Mitochondrial DNA Part A*, 1–12. https://doi.org/10.1080/24701394.2026.2658511
