@@ -2,7 +2,7 @@ library(ggplot2)
 library(ggpubr)
 library(dplyr)
 
-file_path <- "yourpath/RSCU_stack.csv"
+file_path <- "your_path/your_species_RSCU_stack.csv" 
 one <- read.csv(file_path, header = TRUE, stringsAsFactors = FALSE)
 
 one <- one %>%
@@ -12,19 +12,17 @@ one <- one %>%
       AA %in% c("Ser1", "Ser2") ~ "Ser",
       TRUE ~ AA
     )
-  ) %>%
-  group_by(AA) %>%
-  mutate(Fill = row_number()) %>%
-  ungroup()
+  )
 
 aa_freq <- one %>%
-  select(AA, aaRatio) %>%
   filter(!is.na(aaRatio)) %>%
-  distinct(AA, .keep_all = TRUE)
+  group_by(AA) %>%
+  summarise(aaRatio = sum(aaRatio), .groups = "drop")
 
 one <- one %>%
   group_by(AA) %>%
-  mutate(CodonIndex = row_number()) %>%
+  mutate(Fill = row_number(),
+         CodonIndex = row_number()) %>%
   ungroup()
 
 aa_order <- c("Gln","His","Asn","Pro","Thr",
@@ -89,4 +87,4 @@ p_codon <- ggplot() +
 p_b <- ggarrange(p_rscu, p_codon, heights = c(1.6, 0.45), ncol = 1, align = "v")
 pall <- ggarrange(p_freq, p_b, heights = c(1, 1.4), ncol = 1)
 
-ggsave("RSCU_AA.png", plot = pall, width = 10, height = 10, dpi = 900, bg = "white")
+ggsave("RSCU_AA_fixed.png", plot = pall, width = 10, height = 10, dpi = 900, bg = "white")
