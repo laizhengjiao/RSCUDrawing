@@ -2,10 +2,12 @@ library(ggplot2)
 library(ggpubr)
 library(dplyr)
 
+# 1. Data loading and preprocessing
 file_path <- "your_path/your_species_RSCU_stack.csv" 
-one <- read.csv(file_path, header = TRUE, stringsAsFactors = FALSE)
+rscu_data <- read.csv(file_path, header = TRUE, stringsAsFactors = FALSE)
 
-one <- one %>%
+# Merge Leu and Ser subtypes
+rscu_data <- rscu_data %>%
   mutate(
     AA = case_when(
       AA %in% c("Leu1", "Leu2") ~ "Leu",
@@ -14,26 +16,32 @@ one <- one %>%
     )
   )
 
-aa_freq <- one %>%
+# Calculate total frequency per amino acid
+aa_freq_summary <- rscu_data %>%
   filter(!is.na(aaRatio)) %>%
   group_by(AA) %>%
   summarise(aaRatio = sum(aaRatio), .groups = "drop")
 
-one <- one %>%
+# Define indices for stacking order and color fills
+rscu_data <- rscu_data %>%
   group_by(AA) %>%
   mutate(Fill = row_number(),
          CodonIndex = row_number()) %>%
   ungroup()
 
+# 2. Plot Configuration
 aa_order <- c("Gln","His","Asn","Pro","Thr",
               "Leu","Glu","Met","Arg","Tyr","Asp","Lys",
               "Ala","Ile","Ser",
               "Cys","Trp","Val","Gly","Phe")
 
 fill_colors <- c("#4E79A7","#E05C4B","#76B041","#7B5EA7","#F0B429","#3AAFA9","#C96A65","#8BAE5A")
-one$AA_factor <- factor(one$AA, levels = aa_order)
-xfreq <- factor(aa_freq$AA, levels = aa_order)
 
+# Set factors to fix X-axis order
+rscu_data$AA_factor <- factor(rscu_data$AA, levels = aa_order)
+xfreq_factor <- factor(aa_freq_summary$AA, levels = aa_order)
+
+# Define unified theme
 base_theme <- theme(
   panel.background = element_rect(fill = "white", color = NA),
   plot.background = element_rect(fill = "white", color = NA),
@@ -49,7 +57,9 @@ base_theme <- theme(
   legend.position = "none"
 )
 
-p_freq <- ggplot(aa_freq, aes(x = xfreq, y = aaRatio)) +
+# 3. Create individual plots
+# Plot a: Amino acid frequency bar chart
+plot_aa_frequency <- ggplot(aa_freq_summary, aes(x = xfreq_factor, y = aaRatio)) +
   geom_bar(stat = "identity", width = 0.7, fill = "#5B8DB8") +
   geom_text(aes(label = sprintf("%.2f", aaRatio)), vjust = -0.4, size = 2.1, color = "grey35") +
   scale_y_continuous(limits = c(0, 18), breaks = seq(0,16,4), expand = expansion(mult = c(0, 0.08))) +
@@ -59,7 +69,8 @@ p_freq <- ggplot(aa_freq, aes(x = xfreq, y = aaRatio)) +
         plot.title = element_text(face = "bold", size = 19, hjust = 0, margin = margin(b = 4, l = -14)),
         plot.margin = margin(10, 10, 6, 10))
 
-p_rscu <- ggplot(one, aes(x = AA_factor, y = RSCU)) +
+# Plot b (Top): RSCU stacked bar chart
+plot_rscu_stack <- ggplot(rscu_data, aes(x = AA_factor, y = RSCU)) +
   geom_col(aes(fill = as.factor(Fill)), width = 0.7, position = "stack") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "grey55", linewidth = 0.4) +
   scale_fill_manual(values = fill_colors) +
@@ -70,21 +81,30 @@ p_rscu <- ggplot(one, aes(x = AA_factor, y = RSCU)) +
         plot.title = element_text(face = "bold", size = 19, hjust = 0, margin = margin(b = 4, l = -14)),
         plot.margin = margin(0, 10, 0, 10))
 
-cell_h <- 1
-p_codon <- ggplot() +
-  geom_rect(data = one,
+# Plot b (Bottom): Codon label grid
+cell_height <- 1
+plot_codon_labels <- ggplot() +
+  geom_rect(data = rscu_data,
             aes(xmin = as.numeric(AA_factor)-0.46, xmax = as.numeric(AA_factor)+0.46,
-                ymin = -(CodonIndex-1)*cell_h, ymax = -CodonIndex*cell_h),
-            fill = fill_colors[one$Fill], color = "black", linewidth = 0.3) +
-  geom_text(data = one,
-            aes(x = as.numeric(AA_factor), y = -(CodonIndex-0.5)*cell_h, label = Codon),
+                ymin = -(CodonIndex-1)*cell_height, ymax = -CodonIndex*cell_height),
+            fill = fill_colors[rscu_data$Fill], color = "black", linewidth = 0.3) +
+  geom_text(data = rscu_data,
+            aes(x = as.numeric(AA_factor), y = -(CodonIndex-0.5)*cell_height, label = Codon),
             size = 1.9, colour = "white", fontface = "bold") +
   scale_x_continuous(limits = c(0.5, length(aa_order)+0.5), expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
   theme_void() +
   theme(plot.margin = margin(12,10,8,10))
 
-p_b <- ggarrange(p_rscu, p_codon, heights = c(1.6, 0.45), ncol = 1, align = "v")
-pall <- ggarrange(p_freq, p_b, heights = c(1, 1.4), ncol = 1)
+# 4. Assembly and Output
+# Vertically arrange RSCU bars and Codon labels
+p_combined_rscu <- ggarrange(plot_rscu_stack, plot_codon_labels, 
+                             heights = c(1.6, 0.45), ncol = 1, align = "v")
 
-ggsave("RSCU_AA_fixed.png", plot = pall, width = 10, height = 10, dpi = 900, bg = "white")
+# Combine final parts
+final_composite_plot <- ggarrange(plot_aa_frequency, p_combined_rscu, 
+                                  heights = c(1, 1.4), ncol = 1)
+
+# Save high-resolution output
+ggsave("RSCU_AA_fixed.png", plot = final_composite_plot, 
+       width = 10, height = 10, dpi = 900, bg = "white")
