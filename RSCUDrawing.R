@@ -3,7 +3,7 @@ library(ggpubr)
 library(dplyr)
 
 # 1. Data loading and preprocessing
-file_path <- "your_path/your_species_RSCU_stack.csv" 
+file_path <- "your_path/your_species_RSCU_stack.csv"  # From PhyloSuite v2 
 rscu_data <- read.csv(file_path, header = TRUE, stringsAsFactors = FALSE)
 
 # Merge Leu and Ser subtypes
